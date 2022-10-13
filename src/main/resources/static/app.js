@@ -21,10 +21,11 @@ var app = (function () {
     var getMousePosition = function (evt) {
         canvas = document.getElementById("canvas");
         var rect = canvas.getBoundingClientRect();
-        return {
+        var point ={
             x: evt.clientX - rect.left,
             y: evt.clientY - rect.top
         };
+        stompClient.send("/topic/newpoint",{},JSON.stringify(point));
     };
 
 
@@ -38,7 +39,8 @@ var app = (function () {
             console.log('Connected: ' + frame);
             stompClient.subscribe('/topic/newpoint', function (eventbody) {
                var theObject=JSON.parse(eventbody.body);
-               alert(JSON.stringify(theObject));
+               //alert(JSON.stringify(theObject));
+               addPointToCanvas(theObject);
             });
         });
 
@@ -50,7 +52,16 @@ var app = (function () {
 
         init: function () {
             var can = document.getElementById("canvas");
-            
+            can.addEventListener('click', function (evt) {
+                                                  canvas = document.getElementById("canvas");
+                                                  var rect = canvas.getBoundingClientRect();
+                                                  var p ={
+                                                      x: evt.clientX - rect.left,
+                                                      y: evt.clientY - rect.top
+                                                  };
+                                                  var pt = new Point(p.x,p.y);
+                                                  stompClient.send("/topic/newpoint",{},JSON.stringify(pt));
+                                              }, false);
             //websocket connection
             connectAndSubscribe();
         },
